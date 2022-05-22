@@ -8,11 +8,9 @@ int mainload = 5;
 int disp=6;
 int light=7;
 int charger=8;
-int pos = 0; 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0x3F, 0xFE, 0xED };   
 byte ip[] = { 192,168,1,100 };                        
-//byte gateway[] = { 192, 168, 1, 1 };                   
-//byte subnet[] = { 255, 255, 255, 0 };                  
+                 
 EthernetServer server(80);                                 
  
 String readString;            
@@ -27,9 +25,12 @@ void setup() {
  
   Ethernet.begin(mac, ip);    
   server.begin();             
-  Serial.print("server is working at ");          
+  Serial.print("Server is running at ");          
   Serial.println(Ethernet.localIP());   
   digitalWrite(charger,HIGH);
+  digitalWrite(disp,HIGH);
+  digitalWrite(mainload,HIGH);
+  
 }
 
 
@@ -39,11 +40,11 @@ void loop() {
   float voltage=voltagePerPoint*value;
   voltage=voltage-2.5; 
   float Ampere=voltage/sensitivity; 
-  float mod = count%10;
+  float mod = count%60;
   if (mod==0 ){  
     Serial.println("Current is ="+String(Ampere));
     Serial.println("Count is ="+String(count));
-    if(Ampere<0.5){
+    if(Ampere<0.2){
     Serial.println("relay closed");
     digitalWrite(8, LOW);
     delay(1000);
@@ -63,8 +64,7 @@ count++;
         if (readString.length() < 100) {  
           readString += c;  
          }
-
- // Server WEB PAGE if requested by user      
+     
          if (c == '\n') {          
            Serial.println(readString); 
            //html file 
@@ -73,8 +73,6 @@ count++;
            client.println();     
            client.println("<HTML>");
            client.println("<HEAD>");
-           //client.println("<meta name='apple-mobile-web-app-capable' content='yes' />");
-           //client.println("<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />");
            client.println("<TITLE>Energy Efficient Library</TITLE>");
            client.println("</HEAD>");
            client.println("<BODY style=background-color:lightgreen>");
@@ -103,9 +101,9 @@ count++;
            client.println("</HTML>");
      
            delay(1);
-           //stopping client
+           
            client.stop();
-           //Translate the user request and check to switch on or off the fan
+           
            if (readString.indexOf("?button1on") >0){
                digitalWrite(mainload, HIGH);
            }
@@ -130,7 +128,7 @@ count++;
            if (readString.indexOf("?button4off") >0){
                digitalWrite(charger, LOW);
            }
-            //clearing string for next read
+            
             readString="";  
            
          }
